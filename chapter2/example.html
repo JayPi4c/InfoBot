@@ -11,13 +11,16 @@
       xmlhttp.setRequestHeader("Content-Type", "application/json");
       // an array includes values in a row as follows:
       //[timestamp, temperature, humidity]
-      xmlhttp.send(JSON.stringify({data:[[1573900602,21, 78]]}));
+      let timestamp = new Date().getTime();
+      let temperature = 20-(5-Math.random()*10);
+      let humidity = 80 - (10-Math.random()*20);
+      xmlhttp.send(JSON.stringify({data:[[timestamp,temperature, humidity]]}));
     }
   </script>
 </head>
 
 <body>
-  <button type="button" name="button" onclick="runClick()">Test</button>
+  <button type="button" onclick="runClick()">Test</button>
 </body>
 
 </html>
