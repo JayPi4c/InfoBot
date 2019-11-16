@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="de" dir="ltr">
+
+<head>
+  <meta charset="utf-8">
+  <title>Webhook Test</title>
+  <script type="text/javascript">
+    function runClick() {
+      var xmlhttp = new XMLHttpRequest(); // new HttpRequest instance
+      xmlhttp.open("POST", "http://localhost:3000/");
+      xmlhttp.setRequestHeader("Content-Type", "application/json");
+    /*  xmlhttp.send(JSON.stringify(
+        [{
+          sensor: "temperatur",
+          value: 21,
+          timestamp: 1573849136
+        }, {
+          sensor: "humidity",
+          value: 79,
+          timestamp: 1573849136
+        }]
+      ));*/
+      xmlhttp.send(JSON.stringify({data:[[1234,21, 78],[1236,20, 82]]}));
+    }
+  </script>
+</head>
+
+<body>
+  <button type="button" name="button" onclick="runClick()">Test</button>
+</body>
+
+</html>

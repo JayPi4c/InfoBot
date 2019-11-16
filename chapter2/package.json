@@ -1,0 +1,15 @@
+{
+  "name": "chapter2",
+  "version": "1.0.0",
+  "description": "This is a webhook which should push the data coming from the Arduino to Google sheets.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "Server",
+    "Webhook"
+  ],
+  "author": "JayPi4c",
+  "license": "ISC"
+}
