@@ -1,0 +1,22 @@
+{
+  "name": "chapter4",
+  "version": "1.0.0",
+  "description": "This is a server which serves as a Twitterbot and makes it possible to send messages which data from Google Sheets.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "Twitter",
+    "Twitterbot",
+    "Google",
+    "Sheets",
+    "Server"
+  ],
+  "author": "JayPi4c",
+  "license": "MIT",
+  "dependencies": {
+    "dotenv": "^8.2.0",
+    "twit": "^2.2.11"
+  }
+}
