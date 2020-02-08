@@ -125,22 +125,23 @@ void loop() {
 
 String getDataDebug() {
   // Get temperature event and print its value.
-  sensors_event_t event;
-  dht.temperature().getEvent(&event);
-  if (isnan(event.temperature)) {
+  sensors_event_t tempEvent;
+  dht.temperature().getEvent(&tempEvent);
+  if (isnan(tempEvent.temperature)) {
     Serial.println(F("Error reading temperature!"));
   }else {
     Serial.print(F("Temperature: "));
-    Serial.print(event.temperature);
+    Serial.print(tempEvent.temperature);
     Serial.println(F("°C"));
   }
   // Get humidity event and print its value.
-  dht.humidity().getEvent(&event);
-  if (isnan(event.relative_humidity)) {
+  sensors_event_t humidEvent;
+  dht.humidity().getEvent(&humidEvent);
+  if (isnan(humidEvent.relative_humidity)) {
     Serial.println(F("Error reading humidity!"));
   }else {
     Serial.print(F("Humidity: "));
-    Serial.print(event.relative_humidity);
+    Serial.print(humidEvent.relative_humidity);
     Serial.println(F("%"));
   }
 
@@ -152,24 +153,26 @@ String getDataDebug() {
   
   String result = "";
   result.concat(F("temp="));
-  result.concat(event.temperature);
+  result.concat(tempEvent.temperature);
   result.concat(F("&humid="));
-  result.concat(event.relative_humidity);
+  result.concat(humidEvent.relative_humidity);
   result.concat(F("&time="));
   result.concat(dt.unixtime);
   return result;
 }
 
 String getData() {
-  sensors_event_t event;
-  dht.temperature().getEvent(&event);
+  sensors_event_t tempEvent;
+  sensors_event_t humidEvent;
+  dht.temperature().getEvent(&tempEvent);
+  dht.humidity().getEvent(&humidEvent);
   RTCDateTime dt;
   dt = clock.getDateTime();
   String result = "";
   result.concat(F("temp="));
-  result.concat(event.temperature);
+  result.concat(tempEvent.temperature);
   result.concat(F("&humid="));
-  result.concat(event.relative_humidity);
+  result.concat(humidEvent.relative_humidity);
   result.concat(F("&time="));
   result.concat(dt.unixtime);
   return result;
