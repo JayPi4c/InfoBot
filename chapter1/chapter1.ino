@@ -1,59 +1,84 @@
 /*
-  Simple POST client for ArduinoHttpClient library
-  Connects to server once every 30 seconds, sends a POST request
-  and a request body
+   https://forum.arduino.cc/index.php?topic=620997.0
+   https://github.com/arduino-libraries/ArduinoHttpClient
 
-  created 14 Feb 2016
-  modified 22 Jan 2019
-  by Tom Igoe
- 
-  this example is in the public domain
 
-  Modified to work against httpbin.org. The equivalent POST using curl is:
- 
-  curl --data "arg1=value1&arg2=value2" --verbose http://httpbin.org/post
+   created by JayPi4c
+*/
+//#define DEBUG
 
-  The response body contains JSON showing the values and headers received by the httpbin
-  server. Example follows.
- 
-making POST request
-Status code: 200
-Response: {
-  "args": {},
-  "data": "",
-  "files": {},
-  "form": {
-    "arg1": "value1",
-    "arg2": "value2"
-  },
-  "headers": {
-    "Content-Length": "23",
-    "Content-Type": "application/x-www-form-urlencoded",
-    "Host": "httpbin.org",
-    "User-Agent": "Arduino/2.2.0"
-  },
-  "json": null,
-  "url": "https://httpbin.org/post"
-}
- */
+// wifi imports
 #include <ArduinoHttpClient.h>
 #include <WiFiNINA.h>
 #include "arduino_secrets.h"
+
+// Sensor Imports
+#include <Adafruit_Sensor.h>
+#include <DHT.h>
+#include <DHT_U.h>
+#include <Wire.h>
+#include <DS3231.h>
+
 
 ///////please enter your sensitive data in the Secret tab/arduino_secrets.h
 /////// Wifi Settings ///////
 char ssid[] = SECRET_SSID;
 char pass[] = SECRET_PASS;
 
-IPAddress server(192,168,178,20);
+IPAddress server(192, 168, 178, 20);
 int port = 6600;
 
 WiFiClient wifi;
 HttpClient client = HttpClient(wifi, server, port);
 int status = WL_IDLE_STATUS;
 
+
+/////// Sensor Settings ///////
+
+// temp & humid sensor
+#define DHTPIN 2
+#define DHTTYPE    DHT11
+DHT_Unified dht(DHTPIN, DHTTYPE);
+
+//RTC
+DS3231 clock;
+
+
 void setup() {
   Serial.begin(115200);
+
+  //-------Begin Sensor init-------//
+
+  dht.begin();
+  // Print temperature sensor details.
+  sensor_t sensor;
+  dht.temperature().getSensor(&sensor);
+  Serial.println(F("------------------------------------"));
+  Serial.println(F("Temperature Sensor"));
+  Serial.print  (F("Sensor Type: ")); Serial.println(sensor.name);
+  Serial.print  (F("Driver Ver:  ")); Serial.println(sensor.version);
+  Serial.print  (F("Unique ID:   ")); Serial.println(sensor.sensor_id);
+  Serial.print  (F("Max Value:   ")); Serial.print(sensor.max_value); Serial.println(F("°C"));
+  Serial.print  (F("Min Value:   ")); Serial.print(sensor.min_value); Serial.println(F("°C"));
+  Serial.print  (F("Resolution:  ")); Serial.print(sensor.resolution); Serial.println(F("°C"));
+  Serial.println(F("------------------------------------"));
+  // Print humidity sensor details.
+  dht.humidity().getSensor(&sensor);
+  Serial.println(F("Humidity Sensor"));
+  Serial.print  (F("Sensor Type: ")); Serial.println(sensor.name);
+  Serial.print  (F("Driver Ver:  ")); Serial.println(sensor.version);
+  Serial.print  (F("Unique ID:   ")); Serial.println(sensor.sensor_id);
+  Serial.print  (F("Max Value:   ")); Serial.print(sensor.max_value); Serial.println(F("%"));
+  Serial.print  (F("Min Value:   ")); Serial.print(sensor.min_value); Serial.println(F("%"));
+  Serial.print  (F("Resolution:  ")); Serial.print(sensor.resolution); Serial.println(F("%"));
+  Serial.println(F("------------------------------------"));
+
+  clock.begin();
+  //clock.setDateTime(__DATE__, __TIME__);
+  //-------End Sensor init-------//
+
+  //-------Begin WiFi init-------//
+
   while ( status != WL_CONNECTED) {
     Serial.print("Attempting to connect to Network named: ");
     Serial.println(ssid);                   // print the network name (SSID);
@@ -70,12 +95,19 @@ void setup() {
   IPAddress ip = WiFi.localIP();
   Serial.print("IP Address: ");
   Serial.println(ip);
+
+
+  //-------End WiFi init-------//
 }
 
 void loop() {
   Serial.println("making POST request");
   String contentType = "application/x-www-form-urlencoded";
-  String postData = "arg1=value1&arg2=value2";
+#ifdef DEBUG
+  String postData = getDataDebug();
+#else
+  String postData = getData();
+#endif
 
   client.post("/", contentType, postData);
 
@@ -87,6 +119,58 @@ void loop() {
   Serial.print("Response: ");
   Serial.println(response);
 
-  Serial.println("Wait 30 seconds");
-  delay(30000);
+  Serial.println("Wait 60 seconds");
+  delay(60000);
+}
+
+String getDataDebug() {
+  // Get temperature event and print its value.
+  sensors_event_t event;
+  dht.temperature().getEvent(&event);
+  if (isnan(event.temperature)) {
+    Serial.println(F("Error reading temperature!"));
+  }else {
+    Serial.print(F("Temperature: "));
+    Serial.print(event.temperature);
+    Serial.println(F("°C"));
+  }
+  // Get humidity event and print its value.
+  dht.humidity().getEvent(&event);
+  if (isnan(event.relative_humidity)) {
+    Serial.println(F("Error reading humidity!"));
+  }else {
+    Serial.print(F("Humidity: "));
+    Serial.print(event.relative_humidity);
+    Serial.println(F("%"));
+  }
+
+  RTCDateTime dt;
+  dt = clock.getDateTime();
+  Serial.print("unixtime: ");
+  Serial.println(dt.unixtime);
+
+  
+  String result = "";
+  result.concat(F("temp="));
+  result.concat(event.temperature);
+  result.concat(F("&humid="));
+  result.concat(event.relative_humidity);
+  result.concat(F("&time="));
+  result.concat(dt.unixtime);
+  return result;
+}
+
+String getData() {
+  sensors_event_t event;
+  dht.temperature().getEvent(&event);
+  RTCDateTime dt;
+  dt = clock.getDateTime();
+  String result = "";
+  result.concat(F("temp="));
+  result.concat(event.temperature);
+  result.concat(F("&humid="));
+  result.concat(event.relative_humidity);
+  result.concat(F("&time="));
+  result.concat(dt.unixtime);
+  return result;
 }
