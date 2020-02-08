@@ -8,10 +8,9 @@ app.use(bodyParser.urlencoded({
 
 app.post('/', function(req, res) {
   console.log('got Data:')
-  let temp = req.body.temp;
-  let humid = req.body.humid;
-  let time = req.body.time;
-  console.log('temp: ' + temp + ' | humid: ' + humid + ' @ ' + time);
+  let arg1 = req.body.arg1;
+  let arg2 = req.body.arg2;
+  console.log('arg1: ' + arg1 + ' | arg2: ' + arg2);
   res.send('Thanks from Server');
 });
 
