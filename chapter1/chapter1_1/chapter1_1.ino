@@ -75,5 +75,5 @@ void loop() {
 
   dt = clock.getDateTime();
   Serial.print("unixtime: ");
-  Serial.println(dt.unixtime);
+  Serial.println(dt.unixtime-(24L*60L*60L));
 }

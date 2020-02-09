@@ -1,6 +1,8 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 
+const PORT = 31415;
+
 const app = express();
 app.use(bodyParser.urlencoded({
   extended: true
@@ -14,5 +16,5 @@ app.post('/', function(req, res) {
   res.send('Thanks from Server');
 });
 
-app.listen(6600, () =>
-  console.log('listening on port 6600'));
+app.listen(PORT, () =>
+  console.log(`listening on port ${PORT}`));

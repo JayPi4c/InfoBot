@@ -157,7 +157,7 @@ String getDataDebug() {
   result.concat(F("&humid="));
   result.concat(humidEvent.relative_humidity);
   result.concat(F("&time="));
-  result.concat(dt.unixtime);
+  result.concat(dt.unixtime-(24L*60L*60L));
   return result;
 }
 
@@ -174,6 +174,6 @@ String getData() {
   result.concat(F("&humid="));
   result.concat(humidEvent.relative_humidity);
   result.concat(F("&time="));
-  result.concat(dt.unixtime);
+  result.concat(dt.unixtime-(24L*60L*60L));
   return result;
 }

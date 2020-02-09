@@ -6,16 +6,16 @@
   created 14 Feb 2016
   modified 22 Jan 2019
   by Tom Igoe
- 
+
   this example is in the public domain
 
   Modified to work against httpbin.org. The equivalent POST using curl is:
- 
+
   curl --data "arg1=value1&arg2=value2" --verbose http://httpbin.org/post
 
   The response body contains JSON showing the values and headers received by the httpbin
   server. Example follows.
- 
+
 making POST request
 Status code: 200
 Response: {
@@ -46,7 +46,7 @@ char ssid[] = SECRET_SSID;
 char pass[] = SECRET_PASS;
 
 IPAddress server(192,168,178,20);
-int port = 6600;
+int port = 31415;
 
 WiFiClient wifi;
 HttpClient client = HttpClient(wifi, server, port);

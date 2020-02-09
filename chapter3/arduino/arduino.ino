@@ -26,7 +26,7 @@ char ssid[] = SECRET_SSID;
 char pass[] = SECRET_PASS;
 
 IPAddress server(192, 168, 178, 20);
-int port = 3000;
+int port = 31415;
 
 WiFiClient wifi;
 HttpClient client = HttpClient(wifi, server, port);
@@ -42,6 +42,7 @@ DHT_Unified dht(DHTPIN, DHTTYPE);
 
 //RTC
 DS3231 clock;
+const long TIME_OFFSET = 24L*60L*60L;
 
 
 void setup() {
@@ -101,6 +102,7 @@ void setup() {
 }
 
 void loop() {
+  digitalWrite(LED_BUILTIN, HIGH);
   Serial.println("making POST request");
   String contentType = "application/x-www-form-urlencoded";
 #ifdef DEBUG
@@ -118,6 +120,7 @@ void loop() {
   String response = client.responseBody();
   Serial.print("Response: ");
   Serial.println(response);
+  digitalWrite(LED_BUILTIN, LOW);
 
   Serial.println("Wait 60 seconds");
   delay(60000);
@@ -148,12 +151,12 @@ String getDataDebug() {
   RTCDateTime dt;
   dt = clock.getDateTime();
   Serial.print("unixtime: ");
-  Serial.println(dt.unixtime);
+  Serial.println(dt.unixtime-TIME_OFFSET);
 
 
   String result = "";
   result.concat(F("{data:[["));
-  result.concat(dt.unixtime);
+  result.concat(dt.unixtime-TIME_OFFSET);
   result.concat(F(","));
   result.concat(tempEvent.temperature);
   result.concat(F(","));
@@ -171,7 +174,7 @@ String getData() {
   dt = clock.getDateTime();
   String result = "";
   result.concat(F("{\"data\":[["));
-  result.concat(dt.unixtime);
+  result.concat(dt.unixtime-TIME_OFFSET);
   result.concat(F(","));
   result.concat(tempEvent.temperature);
   result.concat(F(","));
