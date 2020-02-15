@@ -25,7 +25,7 @@
 char ssid[] = SECRET_SSID;
 char pass[] = SECRET_PASS;
 
-IPAddress server(192, 168, 178, 20);
+IPAddress server(192, 168, 178, 24);
 int port = 31415;
 
 WiFiClient wifi;

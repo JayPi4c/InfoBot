@@ -6,6 +6,8 @@ const {
   google
 } = require('googleapis');
 
+const sqlite3 = require('sqlite3').verbose();
+
 const http = require('http');
 
 // If modifying these scopes, delete token.json.
@@ -108,6 +110,7 @@ function createServerAndGoogleSheetsObj(oAuth2Client) {
 
       request.on('end', () => {
         bodyParsed = JSON.parse(body);
+        saveInLocalDatabase(bodyParsed.data);
         saveDataAndSendResponse(bodyParsed.data, sheets, response);
       });
 
@@ -125,6 +128,26 @@ function createServerAndGoogleSheetsObj(oAuth2Client) {
     console.log(`server is listening on ${PORT}`)
   });
 
+}
+
+
+function saveInLocalDatabase(data){
+  let db = new sqlite3.Database('./db/database.db', sqlite3.OPEN_READWRITE,  (err) => {
+    if (err) {
+      console.error(err.message);
+    }
+  });
+
+  let sql = 'INSERT INTO sensorData (timestamp, temperature, humidity) VALUES (?, ?, ?)';
+
+  db.run(sql, data[0], err => {
+    if (err) {
+      return console.log(err.message);
+    }
+    console.log(`Locally saved @ ${new Date(data[0][0]*1000).toString()} temp: ${data[0][1]} | humid: ${data[0][2]}.`);
+  });
+
+  db.close();
 }
 
 function saveDataAndSendResponse(data, googleSheetsObj, response) {
