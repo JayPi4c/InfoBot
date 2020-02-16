@@ -21,6 +21,16 @@ listener.on('message', evt => {
       acct: elt.user_account
     };
   });
+  let content = evt.data.last_status.content;
+  //https://stackoverflow.com/a/41756926
+  // Rule to remove inline CSS.
+  content = content.replace(/<style[^>]*>.*<\/style>/gm, '')
+    // Rule to remove all opening, closing and orphan HTML tags.
+    .replace(/<[^>]+>/gm, '')
+    // Rule to remove leading spaces and repeated CR/LF.
+    .replace(/([\r\n]+ +)+/gm, '');
+  console.log(content);
+
   let userID = evt.data.last_status.account.id;
   let userName = evt.data.last_status.account.username;
   let account = evt.data.last_status.account.acct;
@@ -38,7 +48,7 @@ listener.on('message', evt => {
       .catch(error => console.error(error));
 
   }
-  //  fs.writeFileSync('./data.json', JSON.stringify(evt));
+  //fs.writeFileSync('./data.json', JSON.stringify(evt));
   //console.log(evt)
 });
 
