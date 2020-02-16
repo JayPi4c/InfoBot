@@ -14,7 +14,7 @@ let db = new sqlite3.Database('./db/database.db', sqlite3.OPEN_READWRITE, (err) 
   console.log('Connected to the database.');
 });
 
-let min = Math.floor(new Date().getTime() / 1000) - (7*24 * 60 * 60);
+let min = Math.floor(new Date().getTime() / 1000) - (7 * 24 * 60 * 60);
 let now = Math.floor(new Date().getTime() / 1000);
 sql = `SELECT * FROM sensorData WHERE timestamp > ${min}`;
 db.all(sql, [], (err, data) => {
@@ -108,7 +108,7 @@ db.all(sql, [], (err, data) => {
     const saveChart = async () => {
       let image = await mkChart();
 
-      fs.writeFile('./out.png', image, (err) =>console.log(err ? err : 'File successfully saved!'));
+      fs.writeFile('./out.png', image, (err) => console.log(err ? err : 'File successfully saved!'));
 
     };
 

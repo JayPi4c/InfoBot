@@ -131,8 +131,8 @@ function createServerAndGoogleSheetsObj(oAuth2Client) {
 }
 
 
-function saveInLocalDatabase(data){
-  let db = new sqlite3.Database('./db/database.db', sqlite3.OPEN_READWRITE,  (err) => {
+function saveInLocalDatabase(data) {
+  let db = new sqlite3.Database('./db/database.db', sqlite3.OPEN_READWRITE, (err) => {
     if (err) {
       console.error(err.message);
     }
