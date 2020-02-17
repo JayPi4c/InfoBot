@@ -48,10 +48,10 @@ listener.on('message', evt => {
       } else {
         console.log('Connected to the database.');
 
-        let cmd = getCommands(content);
+        let cmd = parseCommand(content);
 
-        let beginDate = new Date(cmd.from.year, cmd.from.month - 1, cmd.from.day, cmd.from.hour, cmd.from.min);
-        let endDate = new Date(cmd.to.year, cmd.to.month - 1, cmd.to.day, cmd.to.hour, cmd.to.min);
+        let beginDate = new Date(cmd.from.year, cmd.from.month, cmd.from.day, cmd.from.hour, cmd.from.minute, cmd.from.second, cmd.from.millisecond);
+        let endDate = new Date(cmd.to.year, cmd.to.month, cmd.to.day, cmd.to.hour, cmd.to.minute, cmd.to.second, cmd.to.millisecond);
 
 
         const sql = `SELECT * FROM sensorData WHERE timestamp > ${Math.floor(beginDate.getTime()/1000)} AND timestamp < ${Math.floor(endDate.getTime()/1000)}`;
@@ -59,7 +59,8 @@ listener.on('message', evt => {
           if (err) console.error(err);
           else {
             console.log(`I got ${data.length} datasamples from database!`);
-            await createAndSendMedia(account, evt.data.last_status.id, data, beginDate, endDate)
+            if (data.length == 0) return;
+            await createAndSendMedia(account, evt.data.last_status.id, data, cmd)
               .then(response => console.log(`Sending reply success: ${response.success}`))
               .catch(err => console.error(err));
             db.close();
@@ -77,9 +78,11 @@ listener.on('error', err => console.log(err));
 console.log('Bot started');
 
 
-async function createAndSendMedia(acct, reply_id, data, beginDate, endDate) {
+async function createAndSendMedia(acct, reply_id, data, cmd) {
+  let beginDate = new Date(cmd.from.year, cmd.from.month, cmd.from.day, cmd.from.hour, cmd.from.minute, cmd.from.second, cmd.from.millisecond);
+  let endDate = new Date(cmd.to.year, cmd.to.month, cmd.to.day, cmd.to.hour, cmd.to.minute, cmd.to.second, cmd.to.millisecond);
   // create image
-  const image = await createImage(data, beginDate, endDate);
+  const image = await createImage(data, cmd, beginDate, endDate);
   // upload image
   const mediaParams = {
     file: image,
@@ -103,82 +106,86 @@ async function createAndSendMedia(acct, reply_id, data, beginDate, endDate) {
 }
 
 
-async function createImage(data, beginDate, endDate) {
+async function createImage(data, cmd, beginDate, endDate) {
+  let config = {};
+  config.type = cmd.type;
+  config.data = {
+    labels: [],
+    datasets: []
+  };
 
-  let humidData = data.map(elt => {
-    return {
-      t: new Date(elt.timestamp * 1000),
-      y: elt.humidity
-    };
-  });
-  humidData = formatDataset(humidData);
-
-  let tempData = data.map(elt => {
-    return {
-      t: new Date(elt.timestamp * 1000),
-      y: elt.temperature
-    };
-  });
-  tempData = formatDataset(tempData);
-
-  let config = {
-    // The type of chart we want to create
-    type: 'line',
-
-    // The data for our dataset
-    data: {
-      labels: [],
-      datasets: [{
-        yAxisID: 'temp',
-        label: 'Temperatur',
-        backgroundColor: 'rgba(200, 0,0,0.5)',
-        borderColor: 'rgb(200, 0 ,0)',
-        data: tempData
-      }, {
-        yAxisID: 'humid',
-        label: 'Luftfeuchtigkeit',
-        /*backgroundColor: 'rgba(0, 0, 200, 0.5)',*/
-        borderColor: 'rgb(0, 0, 200)',
-        data: humidData
-      }]
-    },
-
-    // Configuration options go here
-    options: {
-      scales: {
-        xAxes: [{
-          type: 'time',
-          ticks: {
-            unit: 'day',
-            min: beginDate,
-            max: endDate
-          }
-        }],
-        yAxes: [{
-          id: 'humid',
-          type: 'linear',
-          position: 'right',
-          ticks: {
-            suggestedMin: parseInt(humidData.reduce((min, elt) => elt.y == null ? min : elt.y < min ? elt.y : min, humidData[0].y)) - 1,
-            suggestedMax: parseInt(humidData.reduce((max, elt) => elt.y == null ? max : elt.y > max ? elt.y : max, humidData[0].y)) + 1
-          }
-        }, {
-          id: 'temp',
-          type: 'linear',
-          position: 'left',
-          ticks: {
-            suggestedMin: (tempData.reduce((min, elt) => elt.y == null ? min : elt.y < min ? elt.y : min, tempData[0].y) - 1),
-            suggestedMax: (tempData.reduce((max, elt) => elt.y == null ? max : elt.y > max ? elt.y : max, tempData[0].y) + 1)
-          }
-        }]
-      },
-      elements: {
-        point: {
-          radius: 0
+  config.options = {
+    scales: {
+      xAxes: [{
+        type: 'time',
+        ticks: {
+          unit: 'day',
+          min: beginDate,
+          max: endDate
         }
+      }],
+      yAxes: []
+    },
+    elements: {
+      point: {
+        radius: 0
       }
     }
   };
+
+  if (cmd.value.humidity) {
+
+    let humidData = data.map(elt => {
+      return {
+        t: new Date(elt.timestamp * 1000),
+        y: elt.humidity
+      };
+    });
+    humidData = formatDataset(humidData);
+
+    config.data.datasets.push({
+      yAxisID: 'humid',
+      label: 'Luftfeuchtigkeit',
+      /*backgroundColor: 'rgba(0, 0, 200, 0.5)',*/
+      borderColor: 'rgb(0, 0, 200)',
+      data: humidData
+    });
+    config.options.scales.yAxes.push({
+      id: 'humid',
+      type: 'linear',
+      position: 'right',
+      ticks: {
+        suggestedMin: parseInt(humidData.reduce((min, elt) => elt.y == null ? min : elt.y < min ? elt.y : min, humidData[0].y)) - 1,
+        suggestedMax: parseInt(humidData.reduce((max, elt) => elt.y == null ? max : elt.y > max ? elt.y : max, humidData[0].y)) + 1
+      }
+    });
+  }
+
+  if (cmd.value.temperature) {
+    let tempData = data.map(elt => {
+      return {
+        t: new Date(elt.timestamp * 1000),
+        y: elt.temperature
+      };
+    });
+    tempData = formatDataset(tempData);
+    config.data.datasets.push({
+      yAxisID: 'temp',
+      label: 'Temperatur',
+      backgroundColor: 'rgba(200, 0,0,0.5)',
+      borderColor: 'rgb(200, 0 ,0)',
+      data: tempData
+    });
+    config.options.scales.yAxes.push({
+      id: 'temp',
+      type: 'linear',
+      position: 'left',
+      ticks: {
+        suggestedMin: (tempData.reduce((min, elt) => elt.y == null ? min : elt.y < min ? elt.y : min, tempData[0].y) - 1),
+        suggestedMax: (tempData.reduce((max, elt) => elt.y == null ? max : elt.y > max ? elt.y : max, tempData[0].y) + 1)
+      }
+    });
+  }
 
   const canvasRenderService = new CanvasRenderService(800, 600);
   return await canvasRenderService.renderToDataURL(config);
@@ -189,32 +196,201 @@ async function sendHelp(acct, reply_id) {
   console.log('usage must be provided');
 }
 
+function parseCommand(msg) {
+  let parts = msg.split('-');
+  parts.shift();
 
+  let now = new Date();
+  let yesterday = new Date(now.getTime() - (24 * 60 * 60 * 1000));
 
-function getCommands(textString) {
-  commands = textString.split(' ');
-  commands.shift();
-  commands.map(cmd => cmd.toLowerCase());
-
-  let response = {
+  let answer = {
+    type: 'line',
     from: {
-      year: commands[0],
-      month: commands[1],
-      day: commands[2],
-      hour: commands[3],
-      min: 0
+      year: yesterday.getFullYear(),
+      month: yesterday.getMonth(),
+      day: yesterday.getDate(),
+      hour: yesterday.getHours(),
+      minute: yesterday.getMinutes(),
+      second: yesterday.getSeconds(),
+      millisecond: yesterday.getMilliseconds()
     },
     to: {
-      year: commands[4],
-      month: commands[5],
-      day: commands[6],
-      hour: commands[7],
-      min: 0
+      year: now.getFullYear(),
+      month: now.getMonth(),
+      day: now.getDate(),
+      hour: now.getHours(),
+      minute: now.getMinutes(),
+      second: now.getSeconds(),
+      millisecond: now.getMilliseconds()
+    },
+    value: {
+      humidity: false,
+      temperature: false
     }
   };
 
-  return response;
+
+
+  let fromTimeEdited = false;
+  let toTimeEdited = false;
+  let valueEdited = false;
+
+  for (let i = 0; i < parts.length; i++) {
+    let temp = parts[i].split(' ');
+    switch (temp[0].toLowerCase()) {
+      case 'type':
+        answer.type = temp[1];
+        break;
+      case 'from':
+        fromTimeEdited = true;
+        for (let j = 1; j < temp.length; j++) {
+          switch (j) {
+            case 1:
+              answer.from.year = temp[j];
+              break;
+            case 2:
+              answer.from.month = temp[j] - 1;
+              break;
+            case 3:
+              answer.from.day = temp[j];
+              break;
+            case 4:
+              answer.from.hour = temp[j];
+              break;
+            case 5:
+              answer.from.minute = temp[j];
+              break;
+            case 6:
+              answer.from.second = temp[j];
+              break;
+            case 7:
+              answer.from.millisecond = temp[j];
+              break;
+          }
+        }
+        for (let j = temp.length; j <= 7; j++) {
+          switch (j) {
+            case 2:
+              answer.from.month = 0;
+              break;
+            case 3:
+              answer.from.day = 1;
+              break;
+            case 4:
+              answer.from.hour = 0;
+              break;
+            case 5:
+              answer.from.minute = 0;
+              break;
+            case 6:
+              answer.from.second = 0;
+              break;
+            case 7:
+              answer.from.millisecond = 0;
+              break;
+          }
+        }
+
+        break;
+      case 'to':
+        toTimeEdited = true;
+        for (let j = 1; j < temp.length; j++) {
+          switch (j) {
+            case 1:
+              answer.to.year = temp[j];
+              break;
+            case 2:
+              answer.to.month = temp[j] - 1;
+              break;
+            case 3:
+              answer.to.day = temp[j];
+              break;
+            case 4:
+              answer.to.hour = temp[j];
+              break;
+            case 5:
+              answer.to.minute = temp[j];
+              break;
+            case 6:
+              answer.to.second = temp[j];
+              break;
+            case 7:
+              answer.to.millisecond = temp[j];
+              break;
+          }
+        }
+        for (let j = temp.length; j <= 7; j++) {
+          switch (j) {
+            case 2:
+              answer.to.month = 0;
+              break;
+            case 3:
+              answer.to.day = 1;
+              break;
+            case 4:
+              answer.to.hour = 0;
+              break;
+            case 5:
+              answer.to.minute = 0;
+              break;
+            case 6:
+              answer.to.second = 0;
+              break;
+            case 7:
+              answer.to.millisecond = 0;
+              break;
+          }
+        }
+
+        break;
+      case 'value':
+        valueEdited = true;
+        for (let j = 1; j < temp.length; j++) {
+          switch (temp[j].toLowerCase()) {
+            case 'humid':
+            case 'humidity':
+              answer.value.humidity = true;
+              break;
+            case 'temp':
+            case 'temperature':
+              answer.value.temperature = true;
+              break;
+          }
+        }
+    }
+  }
+
+  if (!valueEdited) {
+    answer.value.temperature = true;
+    answer.value.humidity = true;
+  }
+
+  if (fromTimeEdited && !toTimeEdited) {
+    let date = new Date(answer.from.year, answer.from.month, answer.from.day, answer.from.hour, answer.from.minute, answer.from.second, answer.from.millisecond);
+    let target = new Date(date.getTime() + (24 * 60 * 60 * 1000));
+    answer.to.year = target.getFullYear();
+    answer.to.month = target.getMonth();
+    answer.to.day = target.getDate();
+    answer.to.hour = target.getHours();
+    answer.to.minute = target.getMinutes();
+    answer.to.second = target.getSeconds();
+    answer.to.millisecond = target.getMilliseconds();
+  }
+
+  if (!fromTimeEdited && toTimeEdited) {
+    let date = new Date(answer.to.year, answer.to.month, answer.to.day, answer.to.hour, answer.to.minute, answer.to.second, answer.to.millisecond);
+    let target = new Date(date.getTime() - (24 * 60 * 60 * 1000));
+    answer.from.year = target.getFullYear();
+    answer.from.month = target.getMonth();
+    answer.from.day = target.getDate();
+    answer.from.hour = target.getHours();
+    answer.from.minute = target.getMinutes();
+    answer.from.second = target.getSeconds();
+    answer.from.millisecond = target.getMilliseconds();
+  }
+  return answer;
 }
+
 
 
 function formatDataset(sortedArray) {
