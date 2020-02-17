@@ -7,7 +7,7 @@ const {
 
 
 
-let db = new sqlite3.Database('./db/database.db', sqlite3.OPEN_READWRITE, (err) => {
+let db = new sqlite3.Database('../chapter6/db/database.db', sqlite3.OPEN_READONLY, (err) => {
   if (err) {
     console.error(err.message);
   }
