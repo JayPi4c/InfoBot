@@ -25,8 +25,8 @@
 char ssid[] = SECRET_SSID;
 char pass[] = SECRET_PASS;
 
-IPAddress server(192, 168, 178, 20);
-int port = 6600;
+IPAddress server(192, 168, 178, 24);
+int port = 31415;
 
 WiFiClient wifi;
 HttpClient client = HttpClient(wifi, server, port);
@@ -101,6 +101,7 @@ void setup() {
 }
 
 void loop() {
+  digitalWrite(LED_BUILTIN, HIGH);
   Serial.println("making POST request");
   String contentType = "application/x-www-form-urlencoded";
 #ifdef DEBUG
@@ -118,6 +119,7 @@ void loop() {
   String response = client.responseBody();
   Serial.print("Response: ");
   Serial.println(response);
+  digitalWrite(LED_BUILTIN, LOW);
 
   Serial.println("Wait 60 seconds");
   delay(60000);

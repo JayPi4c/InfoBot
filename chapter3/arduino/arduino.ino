@@ -151,12 +151,12 @@ String getDataDebug() {
   RTCDateTime dt;
   dt = clock.getDateTime();
   Serial.print("unixtime: ");
-  Serial.println(dt.unixtime-TIME_OFFSET);
+  Serial.println(dt.unixtime+TIME_OFFSET);
 
 
   String result = "";
-  result.concat(F("{data:[["));
-  result.concat(dt.unixtime-TIME_OFFSET);
+  result.concat(F("{\"data\":[["));
+  result.concat(dt.unixtime+TIME_OFFSET);
   result.concat(F(","));
   result.concat(tempEvent.temperature);
   result.concat(F(","));
@@ -174,7 +174,7 @@ String getData() {
   dt = clock.getDateTime();
   String result = "";
   result.concat(F("{\"data\":[["));
-  result.concat(dt.unixtime-TIME_OFFSET);
+  result.concat(dt.unixtime+TIME_OFFSET);
   result.concat(F(","));
   result.concat(tempEvent.temperature);
   result.concat(F(","));

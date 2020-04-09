@@ -166,8 +166,8 @@ function saveDataAndSendResponse(data, googleSheetsObj, response) {
     resource,
   }, (err, result) => {
     if (err) {
-      console.log(err);
-      response.end('An error occurd while attempting to save data. See console output.');
+      console.log(`An error occured while attempting to save data online. Code: ${err.code}`);
+      response.end('An error occured while attempting to save data. See console output.');
     } else {
       const time = data[0][0] * 1000;
       const temp = data[0][1];

@@ -17,6 +17,8 @@ const M = new mastodon({
 const listener = M.stream('streaming/direct');
 
 listener.on('message', evt => {
+console.log(`Got a new request @ ${new Date().toString()}`);
+
   // load config file and check if user is allowed to get data from bot
   let config = JSON.parse(fs.readFileSync('./config.json', 'utf8'));
   let ids = config.map(elt => {
@@ -41,7 +43,7 @@ listener.on('message', evt => {
     (elt.id == userID && elt.acct == account), false);
 
   if (valid) {
-
+    console.log('User is valid => proceeding');
     const db = new sqlite3.Database('../db/database.db', sqlite3.OPEN_READONLY, (err) => {
       if (err) {
         console.error(err.message);
