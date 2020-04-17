@@ -110,7 +110,7 @@ void loop() {
   String postData = getData();
 #endif
 
-  client.post("/", contentType, postData);
+  client.post("/chapter1", contentType, postData);
 
   // read the status code and body of the response
   int statusCode = client.responseStatusCode();

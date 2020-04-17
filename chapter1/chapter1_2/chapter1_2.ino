@@ -77,7 +77,7 @@ void loop() {
   String contentType = "application/x-www-form-urlencoded";
   String postData = "arg1=value1&arg2=value2";
 
-  client.post("/", contentType, postData);
+  client.post("/chapter1_2", contentType, postData);
 
   // read the status code and body of the response
   int statusCode = client.responseStatusCode();
