@@ -1,0 +1,5 @@
+node_modules/
+.env
+production/
+database.db
+arduino_secrets.h
