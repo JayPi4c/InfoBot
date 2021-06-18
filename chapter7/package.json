@@ -1,0 +1,22 @@
+{
+  "name": "chapter7",
+  "version": "1.0.0",
+  "description": "This chapter is all about how to use commander.js and format requests from a string so that it is easier to control what the program should do.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "commander",
+    "command",
+    "line",
+    "bot"
+  ],
+  "author": "JayPi4c",
+  "license": "MIT",
+  "dependencies": {
+    "sqlite3": "^5.0.0",
+    "chart.js": "^2.9.3",
+    "chartjs-node-canvas": "^3.0.1"
+  }
+}
