@@ -1,0 +1,17 @@
+<?php
+$db = new SQLite3('/home/pi/db/database.db');
+
+
+$results = $db->query('SELECT * FROM sensorData ORDER BY timestamp DESC LIMIT 5');
+
+while ($row = $results->fetchArray()) {
+ //var_dump($row);
+ $ts = $row[0];
+ $temp = $row[1];
+ $humid = $row[2];
+ $output = date(DATE_ATOM, $ts)." temp: ".$temp ."C; humid: " .$humid;
+ echo $output."<br>";
+}
+
+?>
+
