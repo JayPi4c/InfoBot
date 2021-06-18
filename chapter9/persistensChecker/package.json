@@ -1,0 +1,17 @@
+{
+  "name": "chapter9",
+  "version": "1.0.0",
+  "description": "A simple mqtt client to check if messages arrive periodically",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "JayPi4c",
+  "license": "MIT",
+  "dependencies": {
+    "dotenv": "^10.0.0",
+    "mqtt": "^4.2.6",
+    "nodemailer": "^6.6.1",
+    "sqlite3": "^5.0.2"
+  }
+}

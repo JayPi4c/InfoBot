@@ -1,0 +1,5 @@
+MAIL_PASSWORD=yourMailPassword
+MAIL_HOST=yourMailProvider
+MAIL_PORT=SMTPPort
+MAIL_FROM_USERNAME=YourEmailAddress
+MAIL_TO_USERNAME=RecepientEmailAddress
